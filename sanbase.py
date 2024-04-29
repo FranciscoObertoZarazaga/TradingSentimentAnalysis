@@ -39,7 +39,7 @@ metrics = [
 from_date = (datetime.now().date() - timedelta(days=3)).strftime('%Y-%m-%d')
 to_date = (datetime.now().date()).strftime('%Y-%m-%d')
 
-san.ApiConfig.api_key = 'bzqa3elw352vxpwz_xixeyvrbepd2hwko'
+san.ApiConfig.api_key = ''
 
 for metric in metrics:
     try:

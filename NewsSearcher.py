@@ -1,5 +1,8 @@
+import pandas as pd
+
 from LunarCrush import LunarCrushClass
 import datetime
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 def get_vars(new):
     new_id = new['id']
@@ -9,27 +12,32 @@ def get_vars(new):
     description = new['description']
     social_score = new['social_score']
     sentiment = new['sentiment']
-    verified = new['verified']
+    #verified = new['verified']
     time = datetime.datetime.fromtimestamp(new['time'])
 
-    return new_id, title, publisher, url, description, social_score, sentiment, verified, time
+    return new_id, title, publisher, url, description, social_score, sentiment, time
 
-def print_new(data):
-    print(f'title: "{data[1]}"')
-    print(f'publisher: {data[2]}')
-    print(f'verified: {data[7]}')
-    print(f'url: {data[3]}')
-    print(f'description: {data[4]}')
-    print(f'sentiment: {data[6]}')
-    print(f'time: {data[8]}')
-    print('-' * 50)
+def get_df(data):
+    dic = {
+            'title': data[1],
+            'publisher': data[2],
+            #'verified': data[7],
+            'url': data[3],
+            'description': data[4],
+            'sentiment': data[6],
+            'time': data[7]
+        }
+    df = pd.DataFrame(dic, columns=dic.keys(), index=[0])
+    return dic
+
+
 
 def search(func):
     def wrapper(self, symbol, limit):
         data = self.lc.get_social(symbol=symbol, limit=limit)
         data.sort_values('time', inplace=True, ignore_index=True)
-        func(self, data)
-        print(f'Se solicitaron {limit} datos sobre {symbol}')
+        return func(self, data)
+
     return wrapper
 
 
@@ -39,9 +47,12 @@ class NewsSearcher:
         self.lc = LunarCrushClass()
 
     @search
-    def print_news(self, data):
+    def get_news(self, data):
+        df = pd.DataFrame()
         for info in data.iterrows():
             new = info[1]
-            print_new(get_vars(new))
-        print(f'{len(data)} noticias procesadas')
+            new_dic = get_df(get_vars(new))
+            new_df = pd.DataFrame(new_dic, columns=new_dic.keys(), index=[0])
+            df = pd.concat([df, new_df], ignore_index=True)
+        return df
 

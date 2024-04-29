@@ -3,9 +3,9 @@ from googletrans import Translator
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-API_KEY = 'fmELU0OJygaMKGM3s5SqGfTN8'
-API_SECRET_KEY = 'BLeAPUlQHBCfrS7AQja55kzyhSkDx5wy3iaBhtkkfWkBfKPV1i'
-BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAPxxYQEAAAAAlt6fpt27Z%2FzA9VNEssVMVh4%2BdnU%3DM71C92eMfEGf05BVu8nsGc9fKVaQFqVrF4TBSrzD6WC31oQvAI'
+API_KEY = ''
+API_SECRET_KEY = ''
+BEARER_TOKEN = ''
 
 client = tweepy.Client(bearer_token=BEARER_TOKEN,consumer_key=API_KEY, consumer_secret=API_SECRET_KEY)
 tweets = client.search_recent_tweets(query='bitcoin', max_results=10)[0]

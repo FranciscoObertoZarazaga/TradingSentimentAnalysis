@@ -1,46 +1,54 @@
+import pandas as pd
+from NewsSearcher import NewsSearcher
 from LunarCrush import LunarCrushClass
 from Binance import Binance
 import datetime
 
-lc = LunarCrushClass()
-binance = Binance()
-symbols = binance.getAllCoins()
-print('Coin of the day:', lc.get_coin_of_day()[0])
+class CoinSearcher:
 
-coins = list()
-data = lc.get_meta()['data']
-for coin in data:
-    coin = coin['symbol']
-    if coin in symbols:
-        coins.append(coin)
+    def __init__(self):
+        self.lc = LunarCrushClass()
+        self.binance = Binance()
+        print('Coin of the day:', self.lc.get_coin_of_day()[0])
 
-print('Cantidad monedas en Binance y LC:', len(coins))
-good = list()
-for coin in coins:
-    try:
-        asset_data = lc.get_asset_data(coin)
+    def get_coins(self):
+        symbols = self.binance.getAllCoins()
+        coins = list()
+        data = self.lc.get_meta()['data']
+        for coin in data:
+            coin = coin['symbol']
+            if coin in symbols:
+                coins.append(coin)
 
-        price_score = asset_data['price_score']
-        social_impact_score = asset_data['social_impact_score']
-        average_sentiment = asset_data['average_sentiment']
-        correlation_rank = asset_data['correlation_rank']
-        volatility = asset_data['volatility']
-        galaxy_score = asset_data['galaxy_score']
-        time = datetime.datetime.fromtimestamp(asset_data['time'])
-        points = (price_score + social_impact_score + average_sentiment) * (correlation_rank/5) / 3
+        print('Cantidad monedas en Binance y LunarCrush:', len(coins))
 
-        if points > 5:
-            print(f"{coin}:")
-            print(f"price_score: {price_score}")
-            print(f"social_impact_score: {social_impact_score}")
-            print(f"average_sentiment: {average_sentiment}")
-            print(f"correlation_rank: {correlation_rank}")
-            print(f"volatility: {volatility}")
-            print(f"galaxy_score: {galaxy_score}")
-            print(f"time: {time}")
+        df = pd.DataFrame()
+        for coin in coins:
+            try:
+                asset_data = self.lc.get_asset_data(coin)
 
-            good.append(coin)
-    except Exception as e:
-        continue
+                coin_dict = {
+                    'name': coin,
+                    'time': datetime.datetime.fromtimestamp(asset_data['time']),
+                    'volatility': asset_data['volatility'] * 100
+                }
 
-print(f'Monedas filtradas({len(good)}):', good)
+                coin_df = pd.DataFrame(coin_dict, columns=coin_dict.keys(), index=[0])
+                df = pd.concat([df, coin_df], ignore_index=True)
+            except Exception as e:
+                continue
+
+        df.sort_values('volatility', inplace=True, ignore_index=True, ascending=False)
+        print(f'Monedas filtradas: {len(df)}')
+        return df
+
+    def filter_coins(self, coins):
+        ns = NewsSearcher()
+        for coin in coins['name']:
+            try:
+                print(ns.get_news(symbol=coin, limit=10))
+            except Exception as e:
+                print(e)
+
+
+
